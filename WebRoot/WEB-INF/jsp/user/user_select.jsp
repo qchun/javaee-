@@ -1,0 +1,125 @@
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <base href="<%=basePath%>">
+    
+    <title>My JSP 'user_select.jsp' starting page</title>
+    
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">    
+	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+	<meta http-equiv="description" content="This is my page">
+	<!--
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	-->
+
+  </head>
+  <script type="text/javascript">
+  	function a(){
+  		var msg = "您真的确定要删除吗？\n\n请确认！";
+        if (confirm(msg)==true){
+            return true;
+        }else{
+            return false;
+        }
+  	}
+  	window.onload = function() {
+		var x = document.getElementsByName("ids");
+		var qx = document.getElementById("qx");
+		qx.onclick = function() {          
+			for (var i = 0; i < x.length; i++) {
+				x[i].checked = this.checked;
+			}
+		}
+		for (var i = 0; i < x.length; i++) {
+			x[i].onclick = function() {
+				var number = 0;
+				for (var j = 0; j < x.length; j++) {
+					if (x[j].checked) {
+						number++;
+					}
+				}
+				document.getElementById("qx").checked = (x.length == number);
+			}
+		}
+	}
+	function f(pn){
+		document.getElementById("pageNow").value=pn;
+		document.getElementById("f1").submit();
+	}
+  </script>
+  <body>
+  	<div Style="background-image:url(images/main_locbg.gif);height:32px">
+		&nbsp;&nbsp;&nbsp;<img src="images/pointer.gif" align="middle">
+		当前位置：用户管理>用户查询
+	</div>
+    <form id="f1" action="selectUser" method="post">
+    	<table border="0" cellspacing="0" cellpadding="0" width="80%" height="50px">
+        	<tr>
+        		<td><input type="hidden" name="pageNow" id="pageNow"></td>
+          		<td>用户名:<input type="text" name="username" value="${requestScope.user.username }"></td>
+          		<td>状态:
+          		<select name="status">
+          			<option value="">请选择状态</option>
+          			<option value="1" <c:if test="${requestScope.user.status==1 }">selected</c:if>>未审核</option>
+          			<option value="2" <c:if test="${requestScope.user.status==2 }">selected</c:if>>已审核</option>
+          		</select>
+          		<input type="submit" value="搜索"></td>
+        	</tr>
+		</table>
+    </form>
+    <form action="deleteUsers" method="post">
+	<table border="1" cellspacing="0" cellpadding="0" width="80%">
+		<tr align="center" height="30px">
+			<td>
+				全选<input type="checkbox" id="qx" onclick="checkAll(this)"/>
+				<input type="submit" value="删除" onclick="javascript:return confirm('确认删除这些用户吗？');"/>
+			</td>
+			<td>登入名</td>
+			<td>密码</td>
+			<td>用户名</td>
+			<td>状态</td>
+			<td>创建时间</td>
+			<td>操作</td>
+		</tr>
+		<c:forEach items="${requestScope.userList}" var="ul">
+			<tr align="center" height="30px">
+				<td><input type="checkbox" name="ids" value="${ul.id }"/></td>
+				<td>${ul.loginname }</td>
+				<td>${ul.password }</td>
+				<td>${ul.username }</td>
+				<td><c:if test="${ul.status==1 }">未审核</c:if>
+				<c:if test="${ul.status==2 }">已审核</c:if></td>
+				<td><fmt:formatDate value="${ul.createdate }" pattern="yyyy-MM-dd"/></td>
+				<td><c:if test="${sessionScope.user.id==ul.id || sessionScope.user.username=='超级管理员'}">
+					<a href="updateUserView?id=${ul.id}">修改</a>&nbsp;&nbsp;&nbsp;
+					<a href="deleteUser?id=${ul.id}" onclick="javascript:return a();">删除</a>
+				</c:if></td>
+			</tr>
+		</c:forEach>
+	</table>
+	</form>
+	<table border="1" cellspacing="0" cellpadding="0" width="80%">
+		<tr align="center">
+			<td><a <c:if test="${requestScope.pm.hasFirst }"> href="javascript:f(1);" </c:if>
+				<c:if test="${requestScope.pm.hasFirst==false }"> onclick="javascript:return alert('已经是首页');" </c:if>>首页</a></td>
+			<td><a <c:if test="${requestScope.pm.hasPre }"> href="javascript:f(${requestScope.pm.pageNow-1 });" </c:if>
+				<c:if test="${requestScope.pm.hasPre==false }"> onclick="javascript:return alert('已经是首页,没有上一页');" </c:if>>上一页</a></td>
+			<td><a <c:if test="${requestScope.pm.hasNext }"> href="javascript:f(${requestScope.pm.pageNow+1 });" </c:if>
+				<c:if test="${requestScope.pm.hasNext==false }"> onclick="javascript:return alert('已经是尾页,没有下一页');" </c:if>>下一页</a></td>
+			<td><a <c:if test="${requestScope.pm.hasLast }"> href="javascript:f(${requestScope.pm.totalPage });"</c:if>
+				<c:if test="${requestScope.pm.hasLast==false }"> onclick="javascript:return alert('已经是尾页');"</c:if>>尾页</a></td>
+			<td><c:forEach begin="1" end="${requestScope.pm.totalPage}" var="i"><a href="javascript:f(${i })">&nbsp;${i }</a></c:forEach></td>
+		</tr>
+	</table>
+  </body>
+</html>
